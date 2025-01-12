@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        :root {
+            --bg-color: #0a0a1f;
+            --text-color: #00ff95;
+            --grid-color: #1a1a3f;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .training-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            gap: 4px;
+            margin: 20px;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            background: var(--grid-color);
+            border: 1px solid var(--text-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .cell:hover {
+            background: var(--text-color);
+            opacity: 0.5;
+        }
+
+        .pattern-container {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .controls {
+            margin: 20px;
+        }
+
+        button {
+            background: var(--grid-color);
+            color: var(--text-color);
+            border: 1px solid var(--text-color);
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: var(--text-color);
+            color: var(--bg-color);
+        }
+
+        .score {
+            font-size: 1.5em;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="level" class="score">Level: 1</div>
+    <div id="score" class="score">Score: 0</div>
+    <div class="pattern-container">
+        <h2>Memorize the Pattern</h2>
+        <div class="training-grid" id="patternGrid"></div>
+    </div>
+    <div class="controls">
+        <button onclick="startLevel()">Start Level</button>
+        <button onclick="checkPattern()">Submit Pattern</button>
+    </div>
+
+    <script>
+        let currentLevel = 1;
+        let score = 0;
+        let pattern = [];
+        let userPattern = [];
+        let gridSize = 64; // 8x8 grid
+
+        function initializeGrid() {
+            const grid = document.getElementById('patternGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < gridSize; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => toggleCell(i));
+                grid.appendChild(cell);
+            }
+        }
+
+        function generatePattern() {
+            pattern = [];
+            const cellCount = Math.min(3 + currentLevel, 15);
+            while (pattern.length < cellCount) {
+                const cell = Math.floor(Math.random() * gridSize);
+                if (!pattern.includes(cell)) {
+                    pattern.push(cell);
+                }
+            }
+        }
+
+        function showPattern() {
+            const cells = document.getElementsByClassName('cell');
+            pattern.forEach(index => {
+                cells[index].style.background = 'var(--text-color)';
+            });
+            setTimeout(() => {
+                Array.from(cells).forEach(cell => {
+                    cell.style.background = 'var(--grid-color)';
+                });
+            }, 2000);
+        }
+
+        function toggleCell(index) {
+            const cell = document.getElementsByClassName('cell')[index];
+            const currentColor = cell.style.background;
+            if (currentColor === 'var(--text-color)') {
+                cell.style.background = 'var(--grid-color)';
+                userPattern = userPattern.filter(i => i !== index);
+            } else {
+                cell.style.background = 'var(--text-color)';
+                userPattern.push(index);
+            }
+        }
+
+        function checkPattern() {
+            const isCorrect = pattern.length === userPattern.length && 
+                pattern.every(cell => userPattern.includes(cell));
+            
+            if (isCorrect) {
+                score += currentLevel * 100;
+                currentLevel++;
+                document.getElementById('score').textContent = `Score: ${score}`;
+                document.getElementById('level').textContent = `Level: ${currentLevel}`;
+                alert('Correct! Moving to next level.');
+            } else {
+                alert('Incorrect pattern. Try again!');
+            }
+            userPattern = [];
+            initializeGrid();
+        }
+
+        function startLevel() {
+            initializeGrid();
+            generatePattern();
+            showPattern();
+        }
+
+        initializeGrid();
+    </script>
+</body>
+</html>
